@@ -40,6 +40,14 @@
             .url = "git+https://github.com/natecraddock/ziglua?ref=zig-0.15.2#315b7f25efd29d9e2143d6c0ab685bb7f640450f",
             .hash = "zlua-0.1.0-hGRpCww-BQCx3cX6zbKWfTgOx6B7Peo4P17RK2hm7-xV",
         },
+        //.toml = .{
+        //    .url = "git+https://github.com/sam701/zig-toml#cf17f11f43eba17974c9aef0fe1a4f12d5e3e945",
+        //    .hash = "toml-0.3.0-bV14BfV7AQD8DkuQI7skP8ekQTaBYKTO0MY_35Cw_EXo",
+        //},
+        //.zig_yaml = .{
+        //    .url = "git+https://github.com/kubkon/zig-yaml?ref=0.1.1#4ff995759e28432b16e7a5b6c09ccaba96d24cee",
+        //    .hash = "zig_yaml-0.1.0-C1161miEAgBCwL3YAEQZwV_4GyaaT2Xqj9nKB6hNe_TL",
+        //},
     },
     .paths = .{
         "build.zig",
