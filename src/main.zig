@@ -27,7 +27,7 @@ pub fn main() anyerror!void {
         _ = gpa.deinit();
     }
 
-    rl.initWindow(dracon.console.FRAMEBUFFER_PIX_WIDTH * 3, dracon.console.FRAMEBUFFER_PIX_HEIGHT * 3, "raylib-zig");
+    rl.initWindow(dracon.constants.FRAMEBUFFER_PIX_WIDTH * 3, dracon.constants.FRAMEBUFFER_PIX_HEIGHT * 3, "raylib-zig");
     defer rl.closeWindow();
 
     var con = try allocator.create(dracon.console.Console);
