@@ -48,6 +48,10 @@
         //    .url = "git+https://github.com/kubkon/zig-yaml?ref=0.1.1#4ff995759e28432b16e7a5b6c09ccaba96d24cee",
         //    .hash = "zig_yaml-0.1.0-C1161miEAgBCwL3YAEQZwV_4GyaaT2Xqj9nKB6hNe_TL",
         //},
+        .ztracy = .{
+            .url = "git+https://github.com/zig-gamedev/ztracy#e7b401dea9ce006f8b236e3a2ca1a9f3d5c3e896",
+            .hash = "ztracy-0.14.0-dev-zHJSq78GGQC904aYvBPn6OOvRVOq_opAwDfeHZdvQyej",
+        },
     },
     .paths = .{
         "build.zig",

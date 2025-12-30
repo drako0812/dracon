@@ -4,9 +4,33 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const options = .{
+        .enable_ztracy = b.option(
+            bool,
+            "enable_ztracy",
+            "Enable Tracy profile markers",
+        ) orelse false,
+        .enable_fibers = b.option(
+            bool,
+            "enable_fibers",
+            "Enable Tracy fiber support",
+        ) orelse false,
+        .on_demand = b.option(
+            bool,
+            "on_demand",
+            "Build tracy with TRACY_ON_DEMAND",
+        ) orelse false,
+        .callstack = b.option(
+            bool,
+            "callstack",
+            "Enables tracy callstack",
+        ) orelse false,
+    };
+
     const mod = b.addModule("dracon_zig", .{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
+        .optimize = optimize,
     });
 
     const exe = b.addExecutable(.{
@@ -20,6 +44,20 @@ pub fn build(b: *std.Build) void {
             },
             .link_libc = true,
         }),
+    });
+
+    var ztracy_callstack: u32 = undefined;
+    if (options.callstack) {
+        ztracy_callstack = 32;
+    } else {
+        ztracy_callstack = 0;
+    }
+
+    const ztracy = b.dependency("ztracy", .{
+        .enable_ztracy = options.enable_ztracy,
+        .enable_fibers = options.enable_fibers,
+        .on_demand = options.on_demand,
+        .callstack = ztracy_callstack,
     });
 
     const raylib_dep = b.dependency("raylib_zig", .{
@@ -60,6 +98,8 @@ pub fn build(b: *std.Build) void {
     mod.addImport("raylib", raylib);
     mod.addImport("raygui", raygui);
     mod.addImport("zlua", lua_dep.module("zlua"));
+    mod.addImport("ztracy", ztracy.module("root"));
+    mod.linkLibrary(ztracy.artifact("tracy"));
     //mod.addImport("toml", toml.module("toml"));
     //mod.addImport("yaml", yaml.module("yaml"));
     //mod.addImport("tracy", tracy.module("tracy"));
@@ -70,6 +110,8 @@ pub fn build(b: *std.Build) void {
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
     exe.root_module.addImport("zlua", lua_dep.module("zlua"));
+    exe.root_module.addImport("ztracy", ztracy.module("root"));
+    exe.linkLibrary(ztracy.artifact("tracy"));
     //exe.root_module.addImport("toml", toml.module("toml"));
     //exe.root_module.addImport("yaml", yaml.module("yaml"));
 
@@ -106,11 +148,17 @@ pub fn build(b: *std.Build) void {
         .root_module = mod,
     });
 
+    //mod_tests.root_module.addImport("raylib", raylib);
+    //mod_tests.root_module.linkLibrary(raylib_artifact);
+
     const run_mod_tests = b.addRunArtifact(mod_tests);
 
     const exe_tests = b.addTest(.{
         .root_module = exe.root_module,
     });
+
+    //exe_tests.root_module.addImport("raylib", raylib);
+    //exe_tests.root_module.linkLibrary(raylib_artifact);
 
     const run_exe_tests = b.addRunArtifact(exe_tests);
 

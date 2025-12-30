@@ -23,6 +23,36 @@ pub const UID = struct {
         return .{ .data = bits };
     }
 
+    inline fn bitsToByte(bits: *const [8]u1) u8 {
+        return (@as(u8, @intCast(bits[0])) << 7) |
+            (@as(u8, @intCast(bits[1])) << 6) |
+            (@as(u8, @intCast(bits[2])) << 5) |
+            (@as(u8, @intCast(bits[3])) << 4) |
+            (@as(u8, @intCast(bits[4])) << 3) |
+            (@as(u8, @intCast(bits[5])) << 2) |
+            (@as(u8, @intCast(bits[6])) << 1) |
+            (@as(u8, @intCast(bits[7])));
+    }
+
+    pub fn toBytes(self: *const Self) [120 / 8]u8 {
+        var ret: [120 / 8]u8 = undefined;
+
+        for (0..(120 / 8)) |i| {
+            ret[i] = Self.bitsToByte(&[8]u1{
+                self.data[i * 8],
+                self.data[(i * 8) + 1],
+                self.data[(i * 8) + 2],
+                self.data[(i * 8) + 3],
+                self.data[(i * 8) + 4],
+                self.data[(i * 8) + 5],
+                self.data[(i * 8) + 6],
+                self.data[(i * 8) + 7],
+            });
+        }
+
+        return ret;
+    }
+
     inline fn bitsToNibble(bits: *const [4]u1) u4 {
         return (@as(u4, @intCast(bits[0])) << 3) | (@as(u4, @intCast(bits[1])) << 2) | (@as(u4, @intCast(bits[2])) << 1) | (@as(u4, @intCast(bits[3])));
     }

@@ -3,10 +3,14 @@ const std = @import("std");
 const dracon = @import("dracon_zig");
 const rl = @import("raylib");
 const zlua = @import("zlua");
+const ztracy = @import("ztracy");
 
-const script_file = "examples/ex003_onframe.lua";
+const script_file = "examples/ex107_circ_border.lua";
 
 pub fn main() anyerror!void {
+    const tracy_zone = ztracy.ZoneS(@src(), 32);
+    defer tracy_zone.End();
+
     var uids = [_]dracon.uid.UID{dracon.uid.UID.nil()} ** 10;
     for (0..uids.len) |i| {
         uids[i] = dracon.uid.UID.init();
@@ -27,8 +31,15 @@ pub fn main() anyerror!void {
         _ = gpa.deinit();
     }
 
-    rl.initWindow(dracon.console.FRAMEBUFFER_PIX_WIDTH * 3, dracon.console.FRAMEBUFFER_PIX_HEIGHT * 3, "raylib-zig");
+    rl.initWindow(dracon.constants.FRAMEBUFFER_PIX_WIDTH * 3, dracon.constants.FRAMEBUFFER_PIX_HEIGHT * 3, "raylib-zig");
     defer rl.closeWindow();
+
+    var test_cart = try dracon.cart.Cartridge.alloc(allocator);
+    defer {
+        test_cart.deinit(allocator);
+        allocator.destroy(test_cart);
+    }
+    try test_cart.saveToImage(allocator);
 
     var con = try allocator.create(dracon.console.Console);
     con.* = try dracon.console.Console.init(allocator);
