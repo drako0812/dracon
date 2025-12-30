@@ -67,6 +67,74 @@ pub fn lua_api_cls(lua: *zlua.Lua) !i32 {
     return 0;
 }
 
+pub fn lua_api_line(lua: *zlua.Lua) !i32 {
+    const argc = lua.getTop();
+    if (argc != 5) {
+        lua.raiseErrorStr("`line` expects 5 arguments, got %d", .{argc});
+    }
+    const x1 = try lua.toInteger(1);
+    const y1 = try lua.toInteger(2);
+    const x2 = try lua.toInteger(3);
+    const y2 = try lua.toInteger(4);
+    const col = try lua.toInteger(5);
+    console.GetConsole().?.gfx.framebuf.line(console.GetConsole().?, @intCast(x1), @intCast(y1), @intCast(x2), @intCast(y2), @intCast(col));
+    return 0;
+}
+
+pub fn lua_api_rect(lua: *zlua.Lua) !i32 {
+    const argc = lua.getTop();
+    if (argc != 5) {
+        lua.raiseErrorStr("`rect` expects 5 arguments, got %d", .{argc});
+    }
+    const x = try lua.toInteger(1);
+    const y = try lua.toInteger(2);
+    const w = try lua.toInteger(3);
+    const h = try lua.toInteger(4);
+    const col = try lua.toInteger(5);
+    console.GetConsole().?.gfx.framebuf.rect(console.GetConsole().?, @intCast(x), @intCast(y), @intCast(w), @intCast(h), @intCast(col));
+    return 0;
+}
+
+pub fn lua_api_rectf(lua: *zlua.Lua) !i32 {
+    const argc = lua.getTop();
+    if (argc != 5) {
+        lua.raiseErrorStr("`rectf` expects 5 arguments, got %d", .{argc});
+    }
+    const x = try lua.toInteger(1);
+    const y = try lua.toInteger(2);
+    const w = try lua.toInteger(3);
+    const h = try lua.toInteger(4);
+    const col = try lua.toInteger(5);
+    console.GetConsole().?.gfx.framebuf.rectF(console.GetConsole().?, @intCast(x), @intCast(y), @intCast(w), @intCast(h), @intCast(col));
+    return 0;
+}
+
+pub fn lua_api_circ(lua: *zlua.Lua) !i32 {
+    const argc = lua.getTop();
+    if (argc != 4) {
+        lua.raiseErrorStr("`circ` expects 4 arguments, got %d", .{argc});
+    }
+    const x = try lua.toInteger(1);
+    const y = try lua.toInteger(2);
+    const r = try lua.toInteger(3);
+    const col = try lua.toInteger(4);
+    console.GetConsole().?.gfx.framebuf.circ(console.GetConsole().?, @intCast(x), @intCast(y), @intCast(r), @intCast(col));
+    return 0;
+}
+
+pub fn lua_api_circf(lua: *zlua.Lua) !i32 {
+    const argc = lua.getTop();
+    if (argc != 4) {
+        lua.raiseErrorStr("`circf` expects 4 arguments, got %d", .{argc});
+    }
+    const x = try lua.toInteger(1);
+    const y = try lua.toInteger(2);
+    const r = try lua.toInteger(3);
+    const col = try lua.toInteger(4);
+    console.GetConsole().?.gfx.framebuf.circF(console.GetConsole().?, @intCast(x), @intCast(y), @intCast(r), @intCast(col));
+    return 0;
+}
+
 pub fn lua_api_putch(lua: *zlua.Lua) !i32 {
     const argc = lua.getTop();
     if (argc != 4) {

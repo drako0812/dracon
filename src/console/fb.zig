@@ -1,6 +1,7 @@
 const std = @import("std");
 const constants = @import("./constants.zig");
 const Console = @import("../console.zig").Console;
+const ztracy = @import("ztracy");
 
 pub const FrameBuffer = struct {
     buffer: [constants.FRAMEBUFFER_PIXELS]u5,
@@ -16,6 +17,9 @@ pub const FrameBuffer = struct {
     ///
     /// **NOTE**: Does not do bounds checking.
     pub fn setPixelFast(self: *FrameBuffer, console: *Console, x: i32, y: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         const pix_idx = (y * constants.FRAMEBUFFER_PIX_WIDTH) + x;
         self.buffer[@intCast(pix_idx)] = color;
         console.frmbuf_dirty = true;
@@ -26,6 +30,9 @@ pub const FrameBuffer = struct {
     /// - `y`: Y-Coordinate
     /// - `color`: 5-bit color palette value.
     pub fn setPixel(self: *FrameBuffer, console: *Console, x: i32, y: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         if ((x < 0) or (x >= constants.FRAMEBUFFER_PIX_WIDTH) or (y < 0) or (y >= constants.FRAMEBUFFER_PIX_HEIGHT)) {
             return;
         }
@@ -34,11 +41,17 @@ pub const FrameBuffer = struct {
     }
 
     pub fn getPixelFast(self: *FrameBuffer, x: i32, y: i32) u5 {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         const pix_idx = (y * constants.FRAMEBUFFER_PIX_WIDTH) + x;
         return self.buffer[@as(usize, @intCast(pix_idx))];
     }
 
     pub fn getPixel(self: *FrameBuffer, x: i32, y: i32) ?u5 {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         if ((x < 0) or (x >= constants.FRAMEBUFFER_PIX_WIDTH) or (y < 0) or (y >= constants.FRAMEBUFFER_PIX_HEIGHT)) {
             return null;
         }
@@ -47,27 +60,39 @@ pub const FrameBuffer = struct {
     }
 
     pub fn cls(self: *FrameBuffer, console: *Console, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         @memset(&self.buffer, color);
         console.frmbuf_dirty = true;
     }
 
-    pub fn hLine(self: *FrameBuffer, x: i32, y: i32, l: i32, color: u5) void {
+    pub fn hLine(self: *FrameBuffer, console: *Console, x: i32, y: i32, l: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var xx = x;
         while (xx < x + l) {
-            self.setPixel(xx, y, color);
+            self.setPixel(console, xx, y, color);
             xx += 1;
         }
     }
 
-    pub fn vLine(self: *FrameBuffer, x: i32, y: i32, l: i32, color: u5) void {
+    pub fn vLine(self: *FrameBuffer, console: *Console, x: i32, y: i32, l: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var yy = y;
         while (yy < y + l) {
-            self.setPixel(x, yy, color);
+            self.setPixel(console, x, yy, color);
             yy += 1;
         }
     }
 
-    pub fn line(self: *FrameBuffer, x1: i32, y1: i32, x2: i32, y2: i32, color: u5) void {
+    pub fn line(self: *FrameBuffer, console: *Console, x1: i32, y1: i32, x2: i32, y2: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var x1c = x1;
         var y1c = y1;
         const dx: i32 = @intCast(@abs(x2 - x1c));
@@ -75,23 +100,31 @@ pub const FrameBuffer = struct {
         const dy: i32 = -@as(i32, @intCast(@abs(y2 - y1c)));
         const sy: i32 = if (y1c < y2) 1 else -1;
         var e: i32 = dx + dy;
+        const minx: i32 = @min(x1, x2);
+        //const maxx: i32 = @max(x1, x2);
+        const miny: i32 = @min(y1, y2);
+        //const maxy: i32 = @max(y1, y2);
 
         if ((dx == 0) and (dy == 0)) {
-            self.setPixel(x1c, y1c, color);
+            self.setPixel(console, x1c, y1c, color);
             return;
         }
 
         if ((dx == 0) and (dy != 0)) {
-            self.vLine(sx, sy, dy, color);
+            const yy = @max(y1, y2) - @min(y1, y2);
+            //std.debug.print("self.vLine(console, {}, {}, {}, {})\n", .{ minx, miny, yy, color });
+            self.vLine(console, minx, miny, yy, color);
             return;
         }
 
         if ((dy == 0) and (dx != 0)) {
-            self.hLine(sx, sy, dx, color);
+            const xx = @max(x1, x2) - @min(x1, x2);
+            //std.debug.print("self.hLine(console, {}, {}, {}, {})\n", .{ minx, miny, xx, color });
+            self.hLine(console, minx, miny, xx, color);
         }
 
         while (true) {
-            self.setPixel(x1c, y1c, color);
+            self.setPixel(console, x1c, y1c, color);
             const e2 = 2 * e;
             if (e2 >= dy) {
                 if (x1c == x2) {
@@ -110,32 +143,41 @@ pub const FrameBuffer = struct {
         }
     }
 
-    pub fn rect(self: *FrameBuffer, x: i32, y: i32, w: i32, h: i32, color: u5) void {
-        self.line(x, y, x + w, y, color);
-        self.line(x, y + h, x + w, y + h, color);
-        self.line(x, y, x, y + h, color);
-        self.line(x + w, y, x + w, y + h, color);
+    pub fn rect(self: *FrameBuffer, console: *Console, x: i32, y: i32, w: i32, h: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
+        self.line(console, x, y, x + w, y, color);
+        self.line(console, x, y + h, x + w, y + h, color);
+        self.line(console, x, y, x, y + h, color);
+        self.line(console, x + w, y, x + w, y + h, color);
     }
 
-    pub fn rectF(self: *FrameBuffer, x: i32, y: i32, w: i32, h: i32, color: u5) void {
+    pub fn rectF(self: *FrameBuffer, console: *Console, x: i32, y: i32, w: i32, h: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var xx = x;
         while (xx < x + w) {
-            self.line(xx, y, xx, y + h, color);
+            self.line(console, xx, y, xx, y + h, color);
             xx += 1;
         }
     }
 
-    pub fn circ(self: *FrameBuffer, x: i32, y: i32, r: i32, color: u5) void {
+    pub fn circ(self: *FrameBuffer, console: *Console, x: i32, y: i32, r: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var f: i32 = 1 - r;
         var ddF_x: i32 = 0;
         var ddF_y: i32 = -2 * r;
         var xx: i32 = 0;
         var yy: i32 = r;
 
-        self.setPixel(x, y + r, color);
-        self.setPixel(x, y - r, color);
-        self.setPixel(x + r, y, color);
-        self.setPixel(x - r, y, color);
+        self.setPixel(console, x, y + r, color);
+        self.setPixel(console, x, y - r, color);
+        self.setPixel(console, x + r, y, color);
+        self.setPixel(console, x - r, y, color);
 
         while (xx < yy) {
             if (f >= 0) {
@@ -146,28 +188,32 @@ pub const FrameBuffer = struct {
             xx += 1;
             ddF_x += 2;
             f += ddF_x + 1;
-            self.setPixel(x + xx, y + yy, color);
-            self.setPixel(x - xx, y + yy, color);
-            self.setPixel(x + xx, y - yy, color);
-            self.setPixel(x - xx, y - yy, color);
-            self.setPixel(x + yy, y + xx, color);
-            self.setPixel(x - yy, y + xx, color);
-            self.setPixel(x + yy, y - xx, color);
-            self.setPixel(x - yy, y - xx, color);
+            self.setPixel(console, x + xx, y + yy, color);
+            self.setPixel(console, x - xx, y + yy, color);
+            self.setPixel(console, x + xx, y - yy, color);
+            self.setPixel(console, x - xx, y - yy, color);
+            self.setPixel(console, x + yy, y + xx, color);
+            self.setPixel(console, x - yy, y + xx, color);
+            self.setPixel(console, x + yy, y - xx, color);
+            self.setPixel(console, x - yy, y - xx, color);
         }
     }
 
-    pub fn circF(self: *FrameBuffer, x: i32, y: i32, r: i32, color: u5) void {
+    pub fn circF(self: *FrameBuffer, console: *Console, x: i32, y: i32, r: i32, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var f: i32 = 1 - r;
         var ddF_x: i32 = 0;
         var ddF_y: i32 = -2 * r;
         var xx: i32 = 0;
         var yy: i32 = r;
 
-        self.setPixel(x, y + r, color);
-        self.setPixel(x, y - r, color);
-        self.setPixel(x + r, y, color);
-        self.setPixel(x - r, y, color);
+        self.setPixel(console, x, y + r, color);
+        self.setPixel(console, x, y - r, color);
+        self.setPixel(console, x + r, y, color);
+        self.setPixel(console, x - r, y, color);
+        self.line(console, x - r, y, x + r, y, color);
 
         while (xx < yy) {
             if (f >= 0) {
@@ -178,14 +224,17 @@ pub const FrameBuffer = struct {
             xx += 1;
             ddF_x += 2;
             f += ddF_x + 1;
-            self.line(x - xx, y + yy, x + xx, y + yy, color);
-            self.line(x - xx, y - yy, x + xx, y - yy, color);
-            self.line(x + yy, y + yy, x - yy, y + xx, color);
-            self.line(x + yy, y - xx, x - yy, y - xx, color);
+            self.line(console, x - xx, y + yy, x + xx, y + yy, color);
+            self.line(console, x - xx, y - yy, x + xx, y - yy, color);
+            self.line(console, x - yy, y + xx, x + yy, y + xx, color);
+            self.line(console, x - yy, y - xx, x + yy, y - xx, color);
         }
     }
 
     pub fn putch(self: *FrameBuffer, con: *Console, x: i32, y: i32, ch: u8, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         // Get Glyph
         const glyph = con.gfx.font_data.glyphs[ch];
 
@@ -201,12 +250,18 @@ pub const FrameBuffer = struct {
     }
 
     pub fn puts(self: *FrameBuffer, con: *Console, x: i32, y: i32, str: []const u8, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         for (str, 0..) |ch, idx| {
             self.putch(con, x + @as(i32, @intCast(idx * constants.SPRITE_PIX_WIDTH)), y, ch, color);
         }
     }
 
     pub fn puts_rainbow(self: *FrameBuffer, con: *Console, x: i32, y: i32, str: []const u8, color: u5) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         var col = color;
         for (str, 0..) |ch, idx| {
             self.putch(con, x + @as(i32, @intCast(idx * constants.SPRITE_PIX_WIDTH)), y, ch, col);

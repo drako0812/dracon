@@ -2,6 +2,7 @@ const std = @import("std");
 
 const rl = @import("raylib");
 const zlua = @import("zlua");
+const ztracy = @import("ztracy");
 
 const cart = @import("cart.zig");
 const config = @import("config.zig");
@@ -120,6 +121,9 @@ pub const Console = struct {
     }
 
     pub fn run(self: *Console, script: ?[:0]const u8) !void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         // Load Lua default state.
         self.lua.openBase();
         self.lua.openPackage();
@@ -190,6 +194,8 @@ pub const Console = struct {
         self.lua.pop(1);
 
         while ((!rl.windowShouldClose()) and (self.isRunning())) {
+            const zone_loop = ztracy.ZoneS(@src(), 32);
+            defer zone_loop.End();
             //_ = try self.lua.autoCall(void, "MAIN", .{});
             _ = try self.lua.getGlobal("MAIN");
             self.lua.call(.{ .args = 0, .results = 0 });
@@ -204,6 +210,9 @@ pub const Console = struct {
     }
 
     pub fn render(self: *Console) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         if (self.pal_dirty) {
             self.rebuildPal();
         }
@@ -227,6 +236,8 @@ pub const Console = struct {
             rl.drawFPS(0, 0);
         }
         rl.endDrawing();
+
+        ztracy.FrameMark();
     }
 
     pub fn isRunning(self: *Console) bool {
@@ -234,6 +245,9 @@ pub const Console = struct {
     }
 
     fn rebuildPal(self: *Console) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         for (0..constants.PALETTE_SIZE) |i| {
             const pal_col = self.gfx.pal_data.getEntry(@intCast(i));
             rl.imageDrawPixel(&(self.pal_copy_img), @intCast(i), 0, rl.Color{ .r = pal_col.R, .g = pal_col.G, .b = pal_col.B, .a = 255 });
@@ -244,6 +258,9 @@ pub const Console = struct {
     }
 
     fn rebuildFramebuffer(self: *Console) void {
+        const zone = ztracy.ZoneS(@src(), 32);
+        defer zone.End();
+
         for (0..constants.FRAMEBUFFER_PIX_HEIGHT) |y| {
             for (0..constants.FRAMEBUFFER_PIX_WIDTH) |x| {
                 const pal_idx = self.gfx.framebuf.getPixelFast(@intCast(x), @intCast(y));
@@ -275,6 +292,21 @@ pub const Console = struct {
 
         self.lua.pushFunction(zlua.wrap(api.lua_api_pix));
         self.lua.setGlobal("pix");
+
+        self.lua.pushFunction(zlua.wrap(api.lua_api_line));
+        self.lua.setGlobal("line");
+
+        self.lua.pushFunction(zlua.wrap(api.lua_api_rect));
+        self.lua.setGlobal("rect");
+
+        self.lua.pushFunction(zlua.wrap(api.lua_api_rectf));
+        self.lua.setGlobal("rectf");
+
+        self.lua.pushFunction(zlua.wrap(api.lua_api_circ));
+        self.lua.setGlobal("circ");
+
+        self.lua.pushFunction(zlua.wrap(api.lua_api_circf));
+        self.lua.setGlobal("circf");
 
         self.lua.pushFunction(zlua.wrap(api.lua_api_putch));
         self.lua.setGlobal("putch");
