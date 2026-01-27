@@ -13,8 +13,6 @@ with Image.open("../font.png") as in_img:
     data_bits: list[int] = []
     data_bytes: bytes = b""
 
-    # TODO: Investigate why this only produces 2,048 bytes instead of 16,384
-
     for c in range(0, 256):
         # c is the character index
         xtile = c % 16
@@ -46,5 +44,9 @@ with Image.open("../font.png") as in_img:
 
     # print(data_bytes)
 
-    with open("../src/font.dat", mode="w+b") as ofile:
-        ofile.write(data_bytes)
+    #with open("../src/font.dat", mode="w+b") as ofile:
+    #    ofile.write(data_bytes)
+
+    with open("../src/console/font.dat", mode="w") as ofile:
+        for b in data_bytes:
+            ofile.write(f"{int(b)}, ")

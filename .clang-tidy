@@ -1,0 +1,3 @@
+---
+Checks: 'concurrency-*, cppcoreguidelines-*, modernize-*, performance-*'
+...
