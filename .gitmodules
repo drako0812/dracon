@@ -1,0 +1,27 @@
+[submodule "deps/imgui"]
+	path = deps/imgui
+	url = https://github.com/drako0812/imgui
+[submodule "deps/ImGuiColorTextEdit"]
+	path = deps/ImGuiColorTextEdit
+	url = https://github.com/drako0812/ImGuiColorTextEdit
+[submodule "deps/lua"]
+	path = deps/lua
+	url = https://github.com/drako0812/lua
+[submodule "deps/PlatformFolders"]
+	path = deps/PlatformFolders
+	url = https://github.com/drako0812/PlatformFolders
+[submodule "deps/random"]
+	path = deps/random
+	url = https://github.com/ilqvya/random
+[submodule "deps/raylib"]
+	path = deps/raylib
+	url = https://github.com/drako0812/raylib
+[submodule "deps/rlImGui"]
+	path = deps/rlImGui
+	url = https://github.com/drako0812/rlImGui
+[submodule "deps/sol2"]
+	path = deps/sol2
+	url = https://github.com/drako0812/sol2
+[submodule "deps/tomlplusplus"]
+	path = deps/tomlplusplus
+	url = https://github.com/drako0812/tomlplusplus

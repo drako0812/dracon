@@ -85,9 +85,9 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PointerAlignment: Middle
 ReflowComments: true
-SortIncludes:
-  Enabled: true
-  IgnoreCase: false
+#SortIncludes:
+  #Enabled: true
+  #IgnoreCase: false
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

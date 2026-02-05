@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <ProjectGuid>{5E8320F3-1D5F-A859-D22B-E26CF058B0FA}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>ClangCL</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)deps\raylib\src;$(SolutionDir)deps\PlatformFolders;$(SolutionDir)deps\tomlplusplus\include;$(SolutionDir)deps\sol2\include;$(SolutionDir)deps\lua;$(SolutionDir)deps\imgui;$(SolutionDir)deps\rlImGui;$(SolutionDir)deps\ImGuiColorTextEdit;$(SolutionDir)deps\imgui\misc\cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)deps\raylib\src;$(SolutionDir)deps\PlatformFolders;$(SolutionDir)deps\tomlplusplus\include;$(SolutionDir)deps\sol2\include;$(SolutionDir)deps\lua;$(SolutionDir)deps\imgui;$(SolutionDir)deps\rlImGui;$(SolutionDir)deps\ImGuiColorTextEdit;$(SolutionDir)deps\imgui\misc\cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)deps\raylib\src;$(SolutionDir)deps\PlatformFolders;$(SolutionDir)deps\tomlplusplus\include;$(SolutionDir)deps\sol2\include;$(SolutionDir)deps\lua;$(SolutionDir)deps\imgui;$(SolutionDir)deps\rlImGui;$(SolutionDir)deps\ImGuiColorTextEdit;$(SolutionDir)deps\imgui\misc\cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WarningLevel>Level3</WarningLevel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(SolutionDir)deps\raylib\src;$(SolutionDir)deps\PlatformFolders;$(SolutionDir)deps\tomlplusplus\include;$(SolutionDir)deps\sol2\include;$(SolutionDir)deps\lua;$(SolutionDir)deps\imgui;$(SolutionDir)deps\rlImGui;$(SolutionDir)deps\ImGuiColorTextEdit;$(SolutionDir)deps\imgui\misc\cpp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\cart.cpp" />
+    <ClCompile Include="src\config.cpp" />
+    <ClCompile Include="src\console.cpp" />
+    <ClCompile Include="src\console\fb.cpp" />
+    <ClCompile Include="src\console\font.cpp" />
+    <ClCompile Include="src\console\gamepad.cpp" />
+    <ClCompile Include="src\console\gfx.cpp" />
+    <ClCompile Include="src\console\keyboard.cpp" />
+    <ClCompile Include="src\console\pal.cpp" />
+    <ClCompile Include="src\console\sprite.cpp" />
+    <ClCompile Include="src\editor.cpp" />
+    <ClCompile Include="src\editor\code_editor.cpp" />
+    <ClCompile Include="src\editor\manager.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mode.cpp" />
+    <ClCompile Include="src\player.cpp" />
+    <ClCompile Include="src\prompt.cpp" />
+    <ClCompile Include="src\uid.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\cart.hpp" />
+    <ClInclude Include="include\config.hpp" />
+    <ClInclude Include="include\console.hpp" />
+    <ClInclude Include="include\console\const.hpp" />
+    <ClInclude Include="include\console\fb.hpp" />
+    <ClInclude Include="include\console\font.hpp" />
+    <ClInclude Include="include\console\gamepad.hpp" />
+    <ClInclude Include="include\console\gfx.hpp" />
+    <ClInclude Include="include\console\keyboard.hpp" />
+    <ClInclude Include="include\console\pal.hpp" />
+    <ClInclude Include="include\console\sprite.hpp" />
+    <ClInclude Include="include\editor.hpp" />
+    <ClInclude Include="include\editor\code_editor.hpp" />
+    <ClInclude Include="include\editor\manager.hpp" />
+    <ClInclude Include="include\mode.hpp" />
+    <ClInclude Include="include\player.hpp" />
+    <ClInclude Include="include\prompt.hpp" />
+    <ClInclude Include="include\types.hpp" />
+    <ClInclude Include="include\uid.hpp" />
+    <ClInclude Include="include\util.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="deps\ImGuiColorTextEdit\ImGuiColorTextEdit.vcxproj">
+      <Project>{8bc4326c-e983-5e70-bb91-a7a6f09212e4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\imgui\imgui.vcxproj">
+      <Project>{cb014d41-d8e5-47dd-c88b-f619f5dd61a8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\lua\lua.vcxproj">
+      <Project>{ca05b9a4-dff6-b0b2-11fa-6dbede27ed7f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\PlatformFolders\PlatformFolders.vcxproj">
+      <Project>{3ff08d5e-a480-4ba6-700f-3d27d5920425}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\raylib\projects\VS2022\raylib\raylib.vcxproj">
+      <Project>{e89d61ac-55de-4482-afd4-df7242ebc859}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\rlImGui\rlImGui.vcxproj">
+      <Project>{04c85289-7729-3b38-fe09-fdf6a4449a44}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="dracon.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="dracon-logo.png" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

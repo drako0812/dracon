@@ -1,6 +1,6 @@
-#include "console/pal.hpp"
 #include <cstring>
 #include "console.hpp"
+#include "console/pal.hpp"
 #include "util.hpp"
 
 namespace dracon::console {

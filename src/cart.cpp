@@ -1,11 +1,23 @@
-#include "cart.hpp"
+#include <array>
+#include <console/font.hpp>
+#include <console/pal.hpp>
 #include <cstring>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <ios>
 #include <iostream>
+#include <istream>
+#include <optional>
 #include <sstream>
+#include <string>
+#include <string.h>
+#include <string_view>
+#include <types.hpp>
+#include <uid.hpp>
+#include <variant>
 #include <vector>
+#include "cart.hpp"
 #include "console/const.hpp"
 #include "console/sprite.hpp"
 #include "raylib.h"
@@ -64,11 +76,11 @@ namespace dracon {
 #define TRY try {
 #define ENDTRY(msg)                                                                                                         \
     }                                                                                                                       \
-    catch (const std::ios_base::failure & err) {                                                                            \
+    catch (const std::ios_base::failure &err) {                                                                             \
         return std::format("{}{}", msg, err.what());                                                                        \
     }
 
-    auto Cartridge::Load(std::istream & instrm, const std::string_view fname) -> std::variant<Cartridge, std::string> {
+    auto Cartridge::Load(std::istream &instrm, const std::string_view fname) -> std::variant<Cartridge, std::string> {
         (void)fname;
         Cartridge ret{};
         TRY;
@@ -126,7 +138,7 @@ namespace dracon {
         return ret;
     }
     auto Cartridge::NewID() -> void { ID = UID::Generate(); }
-    auto Cartridge::Save(std::ostream & outstrm) const -> std::optional<std::string> {
+    auto Cartridge::Save(std::ostream &outstrm) const -> std::optional<std::string> {
         TRY;
         outstrm.write((const char *)(&ID), sizeof(ID));
         ENDTRY("Cartridge::Save: Unable to write ID.\n");
@@ -190,7 +202,7 @@ namespace dracon {
         return ret;
     }
 
-    static auto GroupNibblesBy4(const std::vector<u8> & source) -> std::vector<std::array<u8, 4>> {
+    static auto GroupNibblesBy4(const std::vector<u8> &source) -> std::vector<std::array<u8, 4>> {
         std::vector<std::array<u8, 4>> ret{};
         for (std::size_t i = 0; i < source.size(); i += 4) {
             std::array<u8, 4> arr = {0, 0, 0, 0};
@@ -226,7 +238,7 @@ namespace dracon {
         int  y = 0;
         for (std::size_t i = 0; (i < (static_cast<std::size_t>(img.width) * img.height)) && (i < data.size()); i++) {
             auto         color       = GetImageColor(img, x, y);
-            const auto & datum       = data.at(i);
+            const auto  &datum       = data.at(i);
             constexpr u8 HIGH_NIBBLE = 0xF0;
             color.r                  = (color.r & HIGH_NIBBLE) | datum.at(0);
             color.g                  = (color.g & HIGH_NIBBLE) | datum.at(1);

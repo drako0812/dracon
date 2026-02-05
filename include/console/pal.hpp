@@ -11,6 +11,36 @@ namespace dracon {
 
 namespace dracon::console {
 
+    namespace pal {
+        /// @note* These only apply to the default palette.
+        enum Colors {
+            Black = 0,
+            DarkBlue,
+            DarkGreen,
+            DarkCyan,
+            DarkRed,
+            DarkMagenta,
+            DarkYellow,
+            LightGray,
+            DarkDarkGray,
+            Blue,
+            Green,
+            Cyan,
+            Red,
+            Magenta,
+            Yellow,
+            LightLightGray,
+            DarkGray,
+            BluishViolet,
+            ViridianGreen,
+            OxideBlue,
+            MarsYellow,
+            TyrianRose,
+            WarblerGreen,
+            White,
+        };
+    } // namespace pal
+
     struct PaletteEntry {
         u8 R;
         u8 G;

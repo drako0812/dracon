@@ -32,6 +32,10 @@ namespace dracon {
 
       public:
         inline Defer(FType f) : func{f} { }
+        inline Defer(const Defer & other) = delete;
+        inline Defer(Defer && other)      = default;
+        inline auto operator=(const Defer & other) -> Defer & = delete;
+        inline auto operator=(Defer && other) -> Defer &      = default;
         inline ~Defer() { func(); }
     };
 

@@ -9,6 +9,24 @@
 
 namespace dracon::console {
 
+#ifdef _WIN32
+    inline static auto add_sat(u8 a, u8 b) -> u8 {
+        u32 aa = static_cast<u32>(a);
+        u32 bb = static_cast<u32>(b);
+        u32 tmp = aa + bb;
+        return static_cast<u8>(std::min(tmp, 0xFFU));
+    }
+    inline static auto sub_sat(u8 a, u8 b) -> u8 {
+        i32 aa = static_cast<i32>(a);
+        i32 bb = static_cast<i32>(b);
+        i32 tmp = aa - bb;
+        return static_cast<u8>(std::max(tmp, 0));
+    }
+#else
+#define add_sat(a, b) std::add_sat((a), (b))
+#define sub_sat(a, b) std::sub_sat((a), (b))
+#endif
+
     enum PixBlendMode : u16 {
         BlendMode_NONE = 0b000000000,
         BlendMode_XOR  = 0b000100000,
@@ -69,7 +87,7 @@ namespace dracon::console {
                 {
                     u8 colorb     = static_cast<u8>(color & BlendMode_CMASK);
                     u8 src_colorb = static_cast<u8>(src_color);
-                    color         = std::add_sat(src_colorb, colorb);
+                    color         = add_sat(src_colorb, colorb);
                 }
                 break;
             case BlendMode_SUBW:
@@ -84,7 +102,7 @@ namespace dracon::console {
                 {
                     u8 colorb     = static_cast<u8>(color & BlendMode_CMASK);
                     u8 src_colorb = static_cast<u8>(src_color);
-                    color         = std::add_sat(src_colorb, colorb);
+                    color         = sub_sat(src_colorb, colorb);
                 }
                 break;
             case BlendMode_ROTL:

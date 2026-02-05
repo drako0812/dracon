@@ -1,14 +1,15 @@
-#include "console.hpp"
 #include <chrono>
 #include <format>
 #include <iostream>
 #include <string>
+#include "console.hpp"
 #include "console/const.hpp"
 #include "console/gamepad.hpp"
+#include "editor.hpp"
 #include "editor/code_editor.hpp"
 #include "editor/manager.hpp"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "player.hpp"
+#include "prompt.hpp"
 #include "raylib.h"
 #include "rlImGui.h"
 #include "sol/types.hpp"
@@ -66,16 +67,20 @@ void main() {
         auto        cfg_res            = Config::Load();
         bool        cfg_failed         = false;
         std::string cfg_str            = "";
-        std::visit(overloads{[&](const std::string & s) {
+        std::visit(overloads{[&](const std::string & s) -> void {
                                  cfg_failed = true;
                                  cfg_str    = s;
                              },
-                             [&](const Config & c) { m_cfg = c; }},
+                             [&](const Config & c) -> void { m_cfg = c; }},
                    cfg_res);
         if (cfg_failed) { return cfg_str; }
         m_cart_slot.reset();
 
         return std::nullopt;
+    }
+    Console::~Console() {
+        // auto ret = Deinit();
+        // if (ret.has_value()) { std::cerr << "Console: Error occurred while deconstructing:\n" << ret.value() << "\n"; }
     }
     auto Console::LoadNewCart() -> std::optional<std::string> {
         m_cart_slot = std::make_unique<Cartridge>();
@@ -83,11 +88,17 @@ void main() {
     }
     auto Console::GetCart() -> ptr<Cartridge> { return m_cart_slot.get(); }
     auto Console::Deinit() -> std::optional<std::string> {
+        if (m_mode_instance != nullptr) {
+            m_mode_instance->OnUnload(this);
+            m_mode_instance = nullptr;
+        }
+
         rlImGuiShutdown();
 
         std::string err_msg = "";
         if (auto res = m_cfg.Save(); res.has_value()) { err_msg = res.value(); }
 
+        m_script = sol::nil;
         m_on_frame_callbacks.clear();
         m_lua.globals().clear();
         m_lua.stack_clear();
@@ -99,14 +110,14 @@ void main() {
         UnloadRenderTexture(m_rtex);
         UnloadTexture(m_pal_copy);
         UnloadTexture(m_frmbuf_copy);
-        UnloadImage(m_pal_copy_img);
-        UnloadImage(m_frmbuf_copy_img);
+        if (IsImageValid(m_pal_copy_img)) { UnloadImage(m_pal_copy_img); }
+        if (IsImageValid(m_frmbuf_copy_img)) { UnloadImage(m_frmbuf_copy_img); }
 
-        ShowCursor();
+        rlShowCursor();
 
         return err_msg.empty() ? std::optional<std::string>{std::nullopt} : std::optional<std::string>{err_msg};
     }
-    auto Console::Run(std::optional<const std::string_view> script) -> std::optional<std::string> {
+    auto Console::PreRun(std::optional<const std::string_view> script) -> std::optional<std::string> {
         rlImGuiSetup(true);
 
         // Load Lua default state.
@@ -130,7 +141,7 @@ void main() {
             return "Unable to load sprite data from 'data/demo-sprites.png'\n";
         }
 
-        HideCursor();
+        rlHideCursor();
 
         if (auto ret = LoadNewCart(); ret.has_value()) { return ret; }
 
@@ -139,87 +150,33 @@ void main() {
         m_pal_dirty    = true;
         m_frmbuf_dirty = true;
 
-        if (script.has_value()) {
-            auto load_result = m_lua.load_file(std::string(script.value()));
-            auto load_status = load_result.status();
-            if (load_status != sol::load_status::ok) {
-                std::string msg;
-                switch (load_status) {
-                    case sol::load_status::file: msg = "Lua File Load Error"; break;
-                    case sol::load_status::gc: msg = "Lua Garbage Collector Error"; break;
-                    case sol::load_status::memory: msg = "Lua Memory Error"; break;
-                    case sol::load_status::syntax: msg = "Lua Syntax Error"; break;
-                    default: UNREACHABLE; break;
-                }
-                return std::format("Error loading script '{}': {}\n{}", script.value(), msg, sol::error(load_result).what());
-            }
+        if (script.has_value()) { m_script = m_lua.load_file(std::string(script.value())); }
 
-            m_script_start_time = std::chrono::high_resolution_clock::now();
-
-            auto script_return = load_result.call();
-
-            auto script_status = script_return.status();
-            if (script_status != sol::call_status::ok) {
-                std::string msg;
-                switch (script_status) {
-                    case sol::call_status::file: msg = "Lua File Error"; break;
-                    case sol::call_status::gc: msg = "Lua Garbage Collector Error"; break;
-                    case sol::call_status::handler: msg = "Lua Handler Error"; break;
-                    case sol::call_status::memory: msg = "Lua Memory Error"; break;
-                    case sol::call_status::runtime: msg = "Lua Runtime Error"; break;
-                    case sol::call_status::syntax: msg = "Lua Syntax Error"; break;
-                    case sol::call_status::yielded: msg = "Lua Yielded Error"; break;
-                    default: UNREACHABLE; break;
-                }
-                return std::format("Error running script '{}': {}\n{}",
-                                   script.value(),
-                                   msg,
-                                   sol::error(script_return).what());
-            }
-        }
-
-        sol::function MAIN_func = m_lua["MAIN"];
-        if (!MAIN_func.valid()) { return std::format("Error retrieving MAIN function from script '{}'", script.value()); }
+        return std::nullopt;
+    }
+    auto Console::Run(sptr<Mode> initial_mode) -> std::optional<std::string> {
+        m_mode_instance = initial_mode;
+        m_mode_instance->OnLoad(this);
 
         while ((!WindowShouldClose()) && (m_running)) {
-            m_gamepad.Update();
-
-            auto MAIN_result = MAIN_func.call();
-            if (MAIN_result.status() != sol::call_status::ok) {
-                std::string msg;
-                switch (MAIN_result.status()) {
-                    case sol::call_status::file: msg = "Lua File Error"; break;
-                    case sol::call_status::gc: msg = "Lua Garbage Collector Error"; break;
-                    case sol::call_status::handler: msg = "Lua Handler Error"; break;
-                    case sol::call_status::memory: msg = "Lua Memory Error"; break;
-                    case sol::call_status::runtime: msg = "Lua Runtime Error"; break;
-                    case sol::call_status::syntax: msg = "Lua Syntax Error"; break;
-                    case sol::call_status::yielded: msg = "Lua Yielded Error"; break;
-                    default: UNREACHABLE; break;
-                }
-                return std::format("Error running MAIN function in '{}': {}\n{}",
-                                   script.value(),
-                                   msg,
-                                   sol::error(MAIN_result).what());
+            // Handle mode switching controls
+            if (IsKeyPressed(KEY_F1) && (m_mode_instance->GetModeName() != "player")) {
+                std::cout << "Switching to PLAYER\n";
+                SetNewMode(std::make_shared<Player>(GetScript()));
+            } else if (IsKeyPressed(KEY_F2) && (m_mode_instance->GetModeName() != "editor")) {
+                std::cout << "Switching to EDITOR\n";
+                SetNewMode(std::make_shared<Editor>());
+            } else if (IsKeyPressed(KEY_F3) && (m_mode_instance->GetModeName() != "prompt")) {
+                std::cout << "Switching to PROMPT\n";
+                SetNewMode(std::make_shared<Prompt>());
             }
 
-            for (const auto & func : m_on_frame_callbacks) {
-                auto result = func.call();
-                if (result.status() != sol::call_status::ok) {
-                    std::string msg;
-                    switch (result.status()) {
-                        case sol::call_status::file: msg = "Lua File Error"; break;
-                        case sol::call_status::gc: msg = "Lua Garbage Collector Error"; break;
-                        case sol::call_status::handler: msg = "Lua Handler Error"; break;
-                        case sol::call_status::memory: msg = "Lua Memory Error"; break;
-                        case sol::call_status::runtime: msg = "Lua Runtime Error"; break;
-                        case sol::call_status::syntax: msg = "Lua Syntax Error"; break;
-                        case sol::call_status::yielded: msg = "Lua Yielded Error"; break;
-                        default: UNREACHABLE; break;
-                    }
-                    return std::format("Error running on_frame_callback function: {}\n{}", msg, sol::error(result).what());
-                }
+            if (m_next_mode_instance != nullptr) {
+                m_mode_instance      = m_next_mode_instance;
+                m_next_mode_instance = nullptr;
             }
+
+            m_mode_instance->OnUpdate(this);
 
             Render();
         }
@@ -227,6 +184,7 @@ void main() {
         return std::nullopt;
     }
     auto Console::Render() -> void {
+        m_mode_instance->OnPreRender(this);
         // static int count = 0;
         if (m_pal_dirty) { rebuildPal(); }
 
@@ -272,29 +230,7 @@ void main() {
 
         if (IsCursorOnScreen()) { DrawTexture(m_cursor_texture, GetMouseX(), GetMouseY(), WHITE); }
 
-        static bool show_editor_tab_bar = true;
-        static bool show_manager        = true;
-        static bool show_code_editor    = false;
-        if (ImGui::Begin("Editor")) {
-            if (ImGui::BeginTabBar("editor_tab_bar")) {
-                if (ImGui::BeginTabItem("Cart Man", &show_editor_tab_bar, ImGuiTabItemFlags_NoCloseButton)) {
-                    show_code_editor = false;
-                    show_manager     = true;
-                    editor::CartManager(*this, show_manager);
-                    ImGui::EndTabItem();
-                }
-
-                if (ImGui::BeginTabItem("Code", &show_editor_tab_bar, ImGuiTabItemFlags_NoCloseButton)) {
-                    show_manager     = false;
-                    show_code_editor = true;
-                    editor::CodeEditor(*this, show_code_editor);
-                    ImGui::EndTabItem();
-                }
-
-                ImGui::EndTabBar();
-            }
-        }
-        ImGui::End();
+        m_mode_instance->OnRender(this);
 
         rlImGuiEnd();
         EndDrawing();
@@ -330,6 +266,41 @@ void main() {
         auto n = std::chrono::system_clock::now();
         return static_cast<i32>(std::chrono::duration_cast<std::chrono::seconds>(n.time_since_epoch()).count());
     }
+    auto Console::GetModeInstance() -> ptr<Mode> { return m_mode_instance.get(); }
+    auto Console::SetNewMode(sptr<Mode> mode) -> void {
+        m_next_mode_instance = mode;
+        m_mode_instance->OnUnload(this);
+        m_next_mode_instance->OnLoad(this);
+    }
+    auto Console::SetScriptStartTime(std::chrono::high_resolution_clock::time_point tp) -> void { m_script_start_time = tp; }
+    auto Console::IsCartLoaded() const -> bool { return m_cart_slot != nullptr; }
+    auto Console::GetLua() -> sol::state & { return m_lua; }
+    auto Console::CallOnFrameCallbacks() -> std::vector<std::string> {
+        std::vector<std::string> ret = {};
+        for (const auto & func : m_on_frame_callbacks) {
+            auto result = func.call();
+            if (result.status() != sol::call_status::ok) {
+                std::string msg;
+                switch (result.status()) {
+                    case sol::call_status::file: msg = "Lua File Error"; break;
+                    case sol::call_status::gc: msg = "Lua Garbage Collector Error"; break;
+                    case sol::call_status::handler: msg = "Lua Handler Error"; break;
+                    case sol::call_status::memory: msg = "Lua Memory Error"; break;
+                    case sol::call_status::runtime: msg = "Lua Runtime Error"; break;
+                    case sol::call_status::syntax: msg = "Lua Syntax Error"; break;
+                    case sol::call_status::yielded: msg = "Lua Yielded Error"; break;
+                    default: UNREACHABLE; break;
+                }
+                ret.push_back(std::format("Error: While running `on_frame_callback` function: {}\n{}\n",
+                                          msg,
+                                          sol::error(result).what()));
+            }
+        }
+        return ret;
+    }
+    auto Console::GetScript() -> ptr<sol::protected_function> { return &m_script; }
+    auto Console::Exit() -> void { m_running = false; }
+    auto Console::GetGamePad() -> console::GamePad & { return m_gamepad; }
     auto Console::rebuildPal() -> void {
         // static bool exported = false;
         for (i32 i = 0; i < console::PALETTE_SIZE; i++) {
